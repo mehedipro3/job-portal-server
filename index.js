@@ -9,7 +9,9 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
 app.use(cors({
-  origin: ['http://localhost:5173'],
+  origin: ['http://localhost:5173',
+    "https://job-portal-96cb4.web.app",
+    "https://job-portal-96cb4.firebaseapp.com"],
   credentials: true,
 }));
 app.use(express.json());
@@ -53,7 +55,7 @@ async function run() {
   try {
 
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    //await client.connect();
 
     //jobs related jobs
     const jobsCollection = client.db('job-portal').collection('jobs');
@@ -67,18 +69,20 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5h' });
       res.cookie('token', token, {
         httpOnly: true,
-        secure: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       })
         .send({ success: true });
     })
-     
+
 
     //Token delete 
 
     app.post('/logout', (req, res) => {
       res.clearCookie('token', {
         httpOnly: true,
-        secure: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       })
         .send({ success: true })
     })
@@ -167,8 +171,8 @@ async function run() {
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    //await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
   }
 
